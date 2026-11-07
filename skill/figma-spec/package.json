@@ -1,6 +1,6 @@
 {
   "name": "figma-spec-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "figma-spec skill 工具运行依赖（node>=22 或 bun）；ajv 为可选精校依赖",
   "type": "module",
@@ -9,5 +9,8 @@
   },
   "optionalDependencies": {
     "ajv": "8.20.0"
+  },
+  "dependencies": {
+    "docx": "9.5.1"
   }
 }

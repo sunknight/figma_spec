@@ -1,5 +1,5 @@
 // 矢量渲染库（build-lib）：spec → Figma 原生可编辑节点（经 3055 桥直驱，产出矢量画布非贴图）。
-// 提取自 zh_code 0075/0018 管线（Z07 基线为 0018 版：links {t,id} 对象容错、videoCard 渲染块）。
+// links 兼容 {t,id} 对象与字符串两种形制；风格令牌见头部 C（与 style-tokens.md 同步）。
 // 单页直出：node regen.mjs <pageId>（内部调 buildPage）；本文件是块渲染器的唯一实现，风格令牌见头部 C。
 // spec 结构：{ pageId, title, size:[w,h], at:[x,y], ver?, blocks:[{type, ...props}] }（含 ver/@ro/@rw 标识须先过 resolve-ver）
 // 换肤/改版式：改下方 C 令牌与各块渲染函数；新增块类型 = blocks 表加一个渲染器（与 schema / gen-vue 同步，四处同步纪律）。
@@ -27,7 +27,7 @@ import { dirname, join } from 'path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ICON_DIR = join(HERE, '..', 'assets', 'icons') + '/';
 
-// ---------- 设计令牌（主色恢复 #003399 深蓝＝Page1 评审版口径，2026-10-19 用户拍板改回；#00B3FF 仅作历史记录） ----------
+// ---------- 设计令牌（默认深蓝主题；换肤改这里，与 references/style-tokens.md 同步） ----------
 const C = {
   primary: '#003399', bg: '#F6F6FA', card: '#FFFFFF', inputBg: '#F5F6FA', segBg: '#F0F2F7',
   text: '#1A1A1A', text2: '#444653', text3: '#8A8F99', text4: '#A6ABB8',
@@ -82,7 +82,7 @@ const mk = {
   async icon(name, x, y, size, file, o = {}) {
     // 节点名带 [图标文件] 标签：hotfix-icons.mjs 据此秒级定位换图，不必整页重建
     const id = rid(await cmd('create_rectangle', { x: Math.round(x), y: Math.round(y), width: Math.round(size), height: Math.round(size), name: `${name}[${file}]`, parentId: o.parent }));
-    // PNG 资产缺失（Z07 通用包不带图标二进制）→ 浅蓝底圆角占位块，不中断整页生成
+    // PNG 资产缺失 → 浅蓝底圆角占位块，不中断整页生成
     if (!existsSync(ICON_DIR + file + '.png')) {
       await cmd('set_fill_color', { nodeId: id, color: { ...hex2rgb(C.soft), a: 1 } });
       await cmd('set_corner_radius', { nodeId: id, radius: Math.round(size * 0.24) });
@@ -237,8 +237,7 @@ const blocks = {
     const y0 = ctx.y;
     await mk.rect('navbar', 0, y0, 375, 44, { fill: b.dark ? '#14151A' : C.card, parent: ctx.pid });
     if (b.brand) {
-      // 品牌页头（ZctHeader 'brand' 形态）：左 logo + 中航招采
-      // 2026-11-06 评审 M02：去掉「小飞机」logo 图形，暂用文字「中航招采」（正式 logo 1210 前定）
+      // 品牌页头形态：brand 传字符串则左置渲染品牌名
       if (typeof b.brand === 'string' && b.brand) await mk.txt('nav-brand', 16, y0 + 11.5, b.brand, { size: 17, weight: 700, parent: ctx.pid });
       ctx.y += 44;
       return;

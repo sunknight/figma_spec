@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // export-qc.mjs — QC 截图导出：当前页所有 Section 下的页面 frame（无 Section 时取顶层 frame）导出 PNG。
-// 提取自 zh_code 0075 管线（Z07 泛化：输出目录参数化、平铺 <pageId>.png、过期截图自动清理）。
+// 输出目录参数化、平铺 <pageId>.png、过期截图自动清理。
 // 用法：node export-qc.mjs [pageId ...] [--out=qc]    # 不传 pageId = 当前页全量
 // 验收用法：导出后把 PNG 交给 AI 视觉走查（字段齐全/对齐/无重叠/无残留）。
 import { connect, cmd } from './driver.mjs';

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // regen.mjs — spec → Figma 整页矢量重建（删旧 frame → build-lib 重建 → 挂 Section → QC 截图）。
-// 提取自 zh_code 0075 管线（Z07 泛化）：specs 目录 / Section 挂载表 / 文件守卫全部参数化，无配置也能跑。
+// specs 目录 / Section 挂载表 / 文件守卫全部参数化，无配置也能跑。
 //
 // 前提：Figma 桌面端打开目标文件 + 插件运行中 + 桥在线（先跑 bridge-status.mjs 体检）。
 // 用法：

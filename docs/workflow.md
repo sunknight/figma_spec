@@ -1,6 +1,6 @@
 # spec 驱动设计工作流手册（workflow）
 
-> 本手册是 Z07 figma-spec 的完整工作流速查（泛化自 zh_code `docs/spec-workflow.md`，任务 0016/0020 落档版）。
+> 本手册是 figma-spec 的完整工作流速查。
 > 日常会话直接用 skill（`figma-spec`）里的 runbook；本文件供人通读全貌与按场景对号。
 
 ## 0. 总览与三条铁律
@@ -50,7 +50,7 @@ node tools/gen-vue.mjs home02 --specs=design/specs --out=src/pages   # 多变体
 ```
 
 - 原型模式：产物即用（自包含 SFC，`data-ele-id` 点击契约 + `props.data` 数据回填口）。
-- 薄壳 + 稳定层模式（长期项目）：块组件手写一次 + 生成器只产薄壳与 manifest（码漂移报告）；参考 zh_code gen-redesign-blocks.mjs 机制。
+- 薄壳 + 稳定层模式（长期项目）：块组件手写一次 + 生成器只产薄壳与 manifest（码漂移报告）；机制见 skill references/spec-vue.md。
 
 ## 5. 场景速查
 
@@ -62,10 +62,11 @@ node tools/gen-vue.mjs home02 --specs=design/specs --out=src/pages   # 多变体
 | **人工改了 Figma 画布** | `figma-diff <pageId>` 报差异 → `--write` 回写文案类 → 结构类人工决策改 spec → validate → regen → diff 复验全绿 |
 | 新增页面 | new-spec → 编辑 → 校验 → regen 上画布 → 走查过审 → gen-vue |
 | 新增块类型 | 四处同步（build-lib + gen-vue + schema + spec-format §4）→ spec 用之 → 重跑 |
+| 出评审 Word 文档 | export-qc 出最新截图 → gen-doc --specs --qc --out（结构见 references/spec-doc.md）→ 发甲方/归档 |
 | 换肤/改风格 | style-tokens 两处令牌同步改 → regen --all + gen-vue --all |
 | 删除页面 | 删 spec → 画布删 frame（手术路径）→ gen-vue 侧删产物；冻结码留 manifest 档案 |
 
-## 6. 红线提醒（继承 zh_code）
+## 6. 红线提醒
 
 - 冻结码不可改值（改码 = 下游孤儿）；换码 = 新增新码 + 人工迁移。
 - 跳转关系由宿主/配置层/人工确认，spec 与生成物只声明「可点」不决定「去哪」。

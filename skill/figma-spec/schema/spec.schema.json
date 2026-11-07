@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "spec 页面契约（Z07 figma-spec）",
-  "description": "spec 驱动设计的页面数据契约：单源 A/B 变体标识（页级 variants 声明 + 块/项 ver + 字段 k@<变体>）+ rd- 冻结可点码。提取自 zh_code_v2（0020 契约校验/0016 单源化），Z07 泛化：rw/ro 语义重构为任意 abtest 变体。新增块类型/字段 = 稳定层渲染器(build-lib) + gen-vue + 本 schema + skill references/spec-format.md 四处同步。 通用包口径：块级 required 仅收 type（zh 语料中 100% 出现的 sub/h 等在此为可选——渲染器均为可选访问），字段形制仍由 patternProperties+additionalProperties 严格把关。",
+  "title": "spec 页面契约（figma-spec）",
+  "description": "spec 驱动设计的页面数据契约：单源 A/B 变体标识（页级 variants 声明 + 块/项 ver + 字段 k@<变体>）+ rd- 冻结可点码。新增块类型/字段 = 稳定层渲染器(build-lib) + gen-vue + 本 schema + skill references/spec-format.md 四处同步。 块级 required 仅收 type（渲染器均为可选访问），字段形制由 patternProperties+additionalProperties 严格把关。",
   "type": "object",
   "properties": {
     "pageId": {

@@ -1,5 +1,5 @@
 // figma-canvas 桥直驱客户端：ws://127.0.0.1:3055，与 MCP 同协议（join/message + id 配对）。
-// 提取自 zh_code 0075 管线（Z07 泛化）：绕过 MCP，脚本直接驱动 Figma 插件读写画布。
+// 绕过 MCP，脚本直接驱动 Figma 插件读写画布（与 figma-canvas MCP 同协议）。
 // 频道优先级：FIGMA_CHANNEL 环境变量 > 本目录 .channel 文件 > 'default'。
 // 频道获取：Figma 里打开「cursor-talk-to-figma-mcp-plugin」插件，面板上显示的 Channel ID 即频道；
 //           写回 .channel 文件（echo -n <频道> > .channel）或 export FIGMA_CHANNEL=<频道>。

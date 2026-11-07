@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // validate-specs.mjs — spec 契约校验：specs/*.json 对照 schema/spec.schema.json（ajv 精校）。
-// 提取自 zh_code_v2 任务 0020 的校验器（Z07 泛化：目录/ schema 路径参数化 + 无 ajv 时降级精简校验）。
+// 目录/schema 路径参数化；无 ajv 时自动降级精简校验。
 // schema 之外恒做三条脚本级校验：JSON 可解析、pageId == 文件名（去 .json）、A/B 变体标识合法（variants/ver/@<变体>）。
 // 注意：可点编码唯一性/重复检测不在本脚本（生成器 gen-vue / regen 生成时把关），两者互补。
 //

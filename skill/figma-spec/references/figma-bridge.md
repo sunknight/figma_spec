@@ -1,7 +1,7 @@
 # Figma 插件桥（figma-bridge）
 
 > 读写 Figma 画布的唯一通道：**WebSocket 桥（127.0.0.1:3055）+ Figma 社区插件 + 频道配对**。
-> 提取自 zh_code 0074/0075 实战配置。详细安装手册（含本机现状）见工具包 `docs/figma-setup.md`。
+> 详细安装手册（含本机现状）见工具包 `docs/figma-setup.md`。
 
 ## 1. 组件与拓扑
 
@@ -44,7 +44,7 @@ node tools/bridge-status.mjs        # 桥→频道→插件→画布 四级体�
 | **figma-canvas（写）** | 本桥 + 社区插件 | 读+写画布节点 | 生成/修改设计（本 skill 主通道） |
 | figma REST MCP（读，可选） | `figma-developer-mcp`（npx，stdio，`FIGMA_API_KEY` env） | 只读文件数据/图层树/导图 | 无桌面端时读线上文件；令牌 scope `file_content_read`，走密钥库注入不落代码 |
 
-写通道为主；REST 读通道按需配置（zh_code 0074 的 launcher 模式：脚本解密 vault 注入 env 后 exec npx）。
+写通道为主；REST 读通道按需配置（launcher 模式：脚本从密钥库解密注入 env 后 exec npx，令牌不落代码）。
 
 ## 5. 协议要点（driver.mjs 直驱，改工具时须懂）
 

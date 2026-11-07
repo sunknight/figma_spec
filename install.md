@@ -76,7 +76,6 @@ cp -R /Users/sunknight/web/code/sk_ideas/figma_spec/skill/figma-spec ~/.zcode/sk
 ## 升级与同步
 
 - 本仓库 `skill/figma-spec/` 是唯一事实源；改工具/文档在这里改，目标项目重新 `cp -R` 覆盖即可（`.channel` 频道文件与 `assets/icons/` 自备资产建议安装后单独维护，脚本覆盖时自动跳过）。
-- zh_code 项目本身不换装本包（它有自己的深耦合管线）；本包面向新项目与模式复用。
 
 ## 验证安装
 

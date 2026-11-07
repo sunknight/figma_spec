@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // gen-vue.mjs — spec → Vue 3 SFC 页面（每页一个自包含 .vue：模板 + 点击契约 + scoped 样式，零运行时依赖）。
-// Z07 参考实现（对应 zh_code「薄壳 + 稳定层」模式的轻量版）：
+// 参考实现（「薄壳 + 稳定层」模式的轻量版，见 references/spec-vue.md）：
 //   · 版本标识 ver/@ro/@rw 先解析（--ver=rw|ro，默认 rw），冻结码 id 保留为 data-ele-id（点击契约）
 //   · 33 内容块 + 4 chrome 块全部支持渲染；未收录类型落 Generic 卡（标题 + 字段清单），不中断
 //   · 产物是「可运行原型页」：适合快速落地与评审对照；成熟项目可切换为类型组件 + 薄壳模式（见 skill references/spec-vue.md）
@@ -130,7 +130,7 @@ T.annFlow = (b) => `<div class="annflow"${ele(b)}>\n      <div class="card list 
 T.videoCard = (b) => card('video', b, `<div class="v-cover">▶</div><div class="li-title">${esc(b.title ?? '')}</div>${b.meta ? `<div class="li-meta">${esc(b.meta)}</div>` : ''}`);
 T.footer = (b) => `<footer class="page-footer"${ele(b)}>${esc(b.text)}</footer>`;
 T.bottomTip = (b) => `<p class="bottom-tip"${ele(b)}>${esc(b.text)}</p>`;
-// helpStrip 库保留未启用（zh_code 口径），收录为横幅渲染
+// helpStrip 为库保留块类型，收录为横幅渲染
 T.helpStrip = (b) => card('help', b, `<div class="hs-row">${ic(b.icon ?? 'service')}<div><b>${esc(b.title)}</b><p>${esc(b.sub ?? '')}</p></div><a class="more">${esc(b.more ?? '')}</a></div>`);
 
 // ---------- 样式（风格令牌与 style-tokens.md 对应） ----------

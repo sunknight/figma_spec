@@ -1,6 +1,6 @@
-# Z07 · figma-spec — spec 驱动设计独立工具包
+# figma-spec — spec 驱动设计工具包
 
-> 从 zh_code 项目提取并泛化的「spec → Figma → Vue」工作流：**spec 是唯一事实源**，画布与页面代码都是它的下游产物；人工改了画布也能反向同步收回。
+> 「spec → Figma → Vue」工作流：**spec 是唯一事实源**，画布与页面代码都是它的下游产物；人工改了画布也能反向同步收回。
 > 供任何项目安装复用；一个 skill 装完即获得全部能力。
 
 ## 能力总览
@@ -15,6 +15,7 @@
 | **反向同步（人工改过的画布 → 差异提取 → 回写 spec）** | `tools/figma-diff.mjs` |
 | QC 截图验收（导 PNG 交视觉走查） | `tools/export-qc.mjs` |
 | 生成 Vue 页面（自包含 SFC 原型，含点击契约；多变体分文件） | `references/spec-vue.md`、`tools/gen-vue.mjs` |
+| 生成评审 Word 文档（总览/截图/变体差异/区块/可点码，发甲方评审） | `references/spec-doc.md`、`tools/gen-doc.mjs` |
 | 风格令牌（换肤/版式） | `references/style-tokens.md` |
 
 ## 快速开始（在本仓库试跑）
@@ -28,6 +29,10 @@ node tools/bridge-status.mjs                                             # 桥�
 node tools/regen.mjs home02 --specs=examples/specs                       # 上 Figma 画布（桥在线时）
 # 人工在 Figma 改了文案之后：
 node tools/figma-diff.mjs home02 --specs=examples/specs --write          # 差异提取 + 回写 spec
+
+# 出评审 Word 文档（自动嵌入 qc 截图）
+node tools/export-qc.mjs --out=examples/qc
+node tools/gen-doc.mjs --specs=examples/specs --qc=examples/qc --out=examples/design-review.docx
 ```
 
 ## Figma 插件安装（画布读写前置，一次性）
@@ -52,13 +57,13 @@ node tools/figma-diff.mjs home02 --specs=examples/specs --write          # 差�
 ## 目录
 
 ```
-figma_spec/（本仓库，位于 sk_ideas）
+figma_spec/
 ├── README.md               本文件
 ├── install.md / install.sh 装到其他项目
 ├── skill/figma-spec/       ← 完整自包含 skill 包（安装单位）
 │   ├── SKILL.md            入口技能：铁律 + 场景路由 + 工具速查
-│   ├── references/         5 份 runbook（spec-format / figma-bridge / spec-figma / spec-vue / style-tokens）
-│   ├── tools/              10 个脚本（driver/bridge-status/new-spec/validate-specs/resolve-ver(-lib)/build-lib/regen/export-qc/figma-diff/gen-vue）
+│   ├── references/         6 份 runbook（spec-format / figma-bridge / spec-figma / spec-vue / spec-doc / style-tokens）
+│   ├── tools/              11 个脚本（新增 gen-doc：评审 Word 文档）（driver/bridge-status/new-spec/validate-specs/resolve-ver(-lib)/build-lib/regen/export-qc/figma-diff/gen-vue）
 │   ├── schema/spec.schema.json   spec 契约（draft-07，64 定义；变体后缀全层级放行）
 │   ├── examples/           home01/login01/detail01 三份脱敏示例（含变体演示）+ vue 产物 + qc 截图
 │   └── assets/icons/       图标资产目录（PNG 自备，缺省占位兜底）
@@ -69,8 +74,8 @@ figma_spec/（本仓库，位于 sk_ideas）
 
 ## 来源与演化
 
-- 提取基线（2026-11-07）：zh_code_v2 `docs/spec-workflow.md`（0016 单源化）+ `spec.schema.json`/`validate-specs.mjs`（0020 契约校验）+ 老库 0075 矢量渲染管线（build-lib/regen/export-qc/driver）+ 0018 适配版渲染库（links 对象容错）。
-- 泛化点：目录/挂载表/文件守卫参数化（去 zh_code 硬编码）；**rw/ro 语义重构为任意 abtest 变体（variants/ver/@<变体>）**；页级 required 放宽为 type-only；渲染库去业务硬编码（品牌名/登录页头/查看更多等改 spec 驱动）；图标缺失占位兜底；gen-vue 为独立参考实现（zh_code 本体用薄壳+稳定层模式）；figma-diff 为新增反向同步能力。
+- 源自实战交付项目的 spec 驱动设计管线，独立化为零业务耦合的通用工具包。
+- 关键设计：**A/B 变体模型（variants/ver/@<变体>，单源多变体）**；契约校验与生成器互补；渲染库全部 spec 驱动（无业务硬编码）；图标缺失占位兜底；gen-vue 原型模式 + 可演进薄壳模式；figma-diff 反向同步（画布差异回写 spec）。
 - 扩展纪律：新增块类型/字段 = 四处同步（build-lib + gen-vue + schema + spec-format §4）。
 
 ## 运行依赖

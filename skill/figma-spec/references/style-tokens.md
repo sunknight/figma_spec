@@ -1,6 +1,6 @@
 # 画布风格令牌（style-tokens）
 
-> 风格唯一落点：`tools/build-lib.mjs` 头部常量 `C`（Figma 渲染）与 `tools/gen-vue.mjs` 的 `CSS` 变量（Vue 渲染）——**两处同步改**，然后重跑生成链。本文是口径文档（提取自 zh_code 0075 STYLE.md v1）。
+> 风格唯一落点：`tools/build-lib.mjs` 头部常量 `C`（Figma 渲染）与 `tools/gen-vue.mjs` 的 `CSS` 变量（Vue 渲染）——**两处同步改**，然后重跑生成链。本文是口径文档。
 
 ## 1. 画布与栅格
 
@@ -14,7 +14,7 @@
 | navbar → 首块间距 | 通栏块（hero 族/segTabs）= 0 直连；浮层内容块 = 12px 呼吸 | |
 | tabbar | 贴页面底，不参与 12px 节奏 | |
 
-## 2. 配色令牌（默认 = 中航深蓝评审版，换肤改这里）
+## 2. 配色令牌（默认深蓝主题，换肤改这里）
 
 | 令牌 | 值 | 用途 |
 |---|---|---|

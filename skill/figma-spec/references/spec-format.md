@@ -60,7 +60,7 @@
 
 **新增块类型 = 四处同步**：`tools/build-lib.mjs` 渲染器 + `tools/gen-vue.mjs` 渲染器 + `schema/spec.schema.json` + 本文件 §4；然后重跑校验与生成链。
 
-## 5. 编写硬规则（继承 0075 实战）
+## 5. 编写硬规则（实战沉淀）
 
 1. **页面内标题唯一**：有 navbar 就不要再有 hero 大标题（反之亦然）；列表/表单页用 navbar，工作台/首页/登录用 hero 族。
 2. 第一个 block 通常 `statusbar`（hero 族自带头部的登录类页可省）。
