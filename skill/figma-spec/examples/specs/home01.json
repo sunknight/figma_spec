@@ -1,0 +1,119 @@
+{
+ "pageId": "home01",
+ "title": "工作台",
+ "size": [
+  375,
+  812
+ ],
+ "variants": [
+  "a",
+  "b"
+ ],
+ "at": [
+  0,
+  0
+ ],
+ "blocks": [
+  {
+   "type": "statusbar"
+  },
+  {
+   "type": "navbar",
+   "title": "工作台",
+   "back": false
+  },
+  {
+   "type": "hero",
+   "title": "下午好",
+   "sub@a": "今日待办 5 项 · 保持节奏",
+   "sub@b": "今天有 3 件事等你处理",
+   "h": 96
+  },
+  {
+   "type": "quickGrid",
+   "id": "rd-quickGrid",
+   "items": [
+    {
+     "icon": "star",
+     "label": "任务",
+     "id": "rd-quickGrid-item-0"
+    },
+    {
+     "icon": "clock",
+     "label": "日程",
+     "id": "rd-quickGrid-item-1"
+    },
+    {
+     "icon": "folder",
+     "label": "文档",
+     "id": "rd-quickGrid-item-2"
+    },
+    {
+     "icon": "search",
+     "label": "检索",
+     "id": "rd-quickGrid-item-3"
+    }
+   ]
+  },
+  {
+   "type": "stats4",
+   "ver": "a",
+   "items": [
+    [
+     "进行中",
+     "5"
+    ],
+    [
+     "已完成",
+     "128"
+    ],
+    [
+     "协作成员",
+     "8"
+    ]
+   ]
+  },
+  {
+   "type": "listCard",
+   "title": "进行中的任务",
+   "more": "全部任务",
+   "id": "rd-listCard",
+   "rows": [
+    {
+     "tag": "今日",
+     "title": "整理季度目标复盘文档",
+     "meta": "今天 18:00 截止",
+     "id": "rd-listCard-row-0"
+    },
+    {
+     "title": "评审新版首页设计稿",
+     "meta": "明天 10:00 · 3 人参与",
+     "id": "rd-listCard-row-1"
+    },
+    {
+     "title": "整理月度经营分析报告",
+     "meta": "周四 12:00 截止",
+     "id": "rd-listCard-row-2"
+    }
+   ]
+  },
+  {
+   "type": "tabbar",
+   "active": 0,
+   "tabs": [
+    {
+     "key": "home",
+     "label": "首页"
+    },
+    {
+     "key": "message",
+     "label": "消息"
+    },
+    {
+     "key": "mine",
+     "label": "我的"
+    }
+   ]
+  }
+ ]
+}

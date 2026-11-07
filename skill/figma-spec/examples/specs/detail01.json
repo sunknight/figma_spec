@@ -1,0 +1,84 @@
+{
+ "pageId": "detail01",
+ "title": "活动详情",
+ "size": [
+  375,
+  812
+ ],
+ "variants": [
+  "a",
+  "b"
+ ],
+ "at": [
+  920,
+  0
+ ],
+ "blocks": [
+  {
+   "type": "statusbar"
+  },
+  {
+   "type": "navbar",
+   "title": "活动详情"
+  },
+  {
+   "type": "hero",
+   "sub": "2026 产品设计分享会 · 线上直播",
+   "h": 60
+  },
+  {
+   "type": "infoCard",
+   "title": "活动信息",
+   "id": "rd-infoCard",
+   "rows": [
+    [
+     "活动形式",
+     "线上直播"
+    ],
+    [
+     "主讲人",
+     "林岚"
+    ],
+    [
+     "时间",
+     "2026-11-15 14:00"
+    ],
+    [
+     "时长",
+     "90 分钟"
+    ]
+   ]
+  },
+  {
+   "type": "attachRows",
+   "id": "rd-attachRows",
+   "rows": [
+    {
+     "name": "活动议程.pdf",
+     "meta": "PDF · 128KB · 已更新",
+     "id": "rd-attachRows-att-0"
+    }
+   ]
+  },
+  {
+   "type": "btnRow",
+   "id": "rd-btnRow",
+   "buttons": [
+    {
+     "text@a": "立即报名",
+     "text@b": "预约提醒",
+     "primary": true,
+     "id": "rd-btnRow-btn-0"
+    },
+    {
+     "text": "添加到日历",
+     "id": "rd-btnRow-btn-1"
+    }
+   ]
+  },
+  {
+   "type": "footer",
+   "text": "— 主办方：产品设计社区 —"
+  }
+ ]
+}

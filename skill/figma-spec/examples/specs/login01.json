@@ -1,0 +1,67 @@
+{
+ "pageId": "login01",
+ "title": "登录",
+ "size": [
+  375,
+  812
+ ],
+ "at": [
+  460,
+  0
+ ],
+ "blocks": [
+  {
+   "type": "brandHero",
+   "title": "轻协作",
+   "sub": "让团队同步更简单",
+   "trust": [
+    [
+     "50万+",
+     "团队在用"
+    ],
+    [
+     "99.9%",
+     "服务可用性"
+    ],
+    [
+     "7×24",
+     "支持响应"
+    ]
+   ]
+  },
+  {
+   "type": "loginCard",
+   "id": "rd-loginCard",
+   "fields": [
+    {
+     "key": "acc",
+     "label": "账号",
+     "icon": "user",
+     "placeholder": "手机号 / 邮箱"
+    },
+    {
+     "key": "pwd",
+     "label": "密码",
+     "icon": "lock",
+     "eye": true,
+     "placeholder": "请输入密码"
+    }
+   ],
+   "button": "登 录",
+   "links": [
+    {
+     "t": "忘记密码？",
+     "id": "rd-loginCard-link-0"
+    },
+    {
+     "t": "R:还没有账号？免费注册",
+     "id": "rd-loginCard-link-1"
+    }
+   ]
+  },
+  {
+   "type": "footer",
+   "text": "登录即代表同意服务协议与隐私政策"
+  }
+ ]
+}

@@ -1,0 +1,1867 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "spec 页面契约（Z07 figma-spec）",
+  "description": "spec 驱动设计的页面数据契约：单源 A/B 变体标识（页级 variants 声明 + 块/项 ver + 字段 k@<变体>）+ rd- 冻结可点码。提取自 zh_code_v2（0020 契约校验/0016 单源化），Z07 泛化：rw/ro 语义重构为任意 abtest 变体。新增块类型/字段 = 稳定层渲染器(build-lib) + gen-vue + 本 schema + skill references/spec-format.md 四处同步。 通用包口径：块级 required 仅收 type（zh 语料中 100% 出现的 sub/h 等在此为可选——渲染器均为可选访问），字段形制仍由 patternProperties+additionalProperties 严格把关。",
+  "type": "object",
+  "properties": {
+    "pageId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]{1,11}$",
+      "description": "页面 ID（= spec 文件名/页面目录名；项目可自定前缀分区规约，如 s=登录 bd=投标人）"
+    },
+    "title": {
+      "type": "string",
+      "description": "页标题（进 pageCatalog 名称、薄壳注释）"
+    },
+    "size": {
+      "$ref": "#/definitions/xy",
+      "description": "画布尺寸 [宽,高]，宽固定 375"
+    },
+    "at": {
+      "$ref": "#/definitions/xy",
+      "description": "Figma 画布网格坐标（画板挂载位置，按角色分区）"
+    },
+    "variants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]{0,15}$"
+      },
+      "description": "声明本页的 A/B 变体空间（如 [\"a\",\"b\"]）；用 ver/@<变体> 标记前必须声明，\"all\" 为保留字"
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/block"
+      }
+    }
+  },
+  "required": [
+    "pageId",
+    "title",
+    "size",
+    "blocks"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "xy": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "s": {
+      "type": "string"
+    },
+    "n": {
+      "type": "number"
+    },
+    "b": {
+      "type": "boolean"
+    },
+    "strArr": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pair": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[label,value] 二元组"
+    },
+    "tri": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2,
+      "maxItems": 3,
+      "description": "2~3 元字符串组（stats4 可带第三段徽标）"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^rd-[A-Za-z0-9][A-Za-z0-9-]*$",
+      "description": "可点编码冻结码：rd- 前缀 + 字母数字连字符；进 DB（page_clickable/button_binding）后不可改值"
+    },
+    "verItem": {
+      "anyOf": [
+        {
+          "const": "all",
+          "description": "所有变体共有（缺省值，通常直接省略 ver）"
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,15}$",
+          "description": "变体名（须在页级 variants 中声明；如 a/b/lite/pro）"
+        }
+      ],
+      "description": "A/B 变体归属标记：块/对象数组项只在对应变体输出"
+    },
+    "rowCard": {
+      "type": "object",
+      "description": "行卡条目（listCard/annList/annFlow 的 rows 项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^tag(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^win(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^tagWin(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^meta(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^right(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^rightDanger(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "linkItem": {
+      "type": "object",
+      "description": "links 项：对象形制才能携带 id（纯字符串形制会被生成器要求改写）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^t(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "gridItem": {
+      "type": "object",
+      "description": "宫格条目（serviceGrid/quickGrid 的 items 项；icon 图标名或 vicon 矢量名二选一）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^icon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^vicon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "heroCa": {
+      "type": "object",
+      "description": "hero 快捷入口项（ca 数组项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^vicon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "sideItem": {
+      "type": "object",
+      "description": "annFlow 侧栏入口项（side 数组项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^icon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "attachRow": {
+      "type": "object",
+      "description": "附件行（attachRows 的 rows 项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^name(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^meta(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "msgItem": {
+      "type": "object",
+      "description": "消息条目（msgList 的 items 项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^preview(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^time(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^icon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^unread(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "btnItem": {
+      "type": "object",
+      "description": "按钮条目（btnRow 的 buttons 项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^text(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^primary(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^disabled(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "fieldItem": {
+      "type": "object",
+      "description": "表单字段（formCard/loginCard 的 fields 项；key 供接口绑定与编码派生）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^key(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^req(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^icon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^picker(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^value(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^placeholder(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^eye(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^hint(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^codeBtn(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^captcha(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^phoneMask(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^scope(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "cgItem": {
+      "type": "object",
+      "description": "表单组条目（cardGroup 的 items 项；field 输入行可点，radio/upload 为页内态）",
+      "properties": {
+        "type": {
+          "enum": [
+            "field",
+            "radio",
+            "upload"
+          ]
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^key(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^req(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^note(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^placeholder(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^icon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^eye(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^hint(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^picker(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^value(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^codeBtn(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^captcha(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "segItem": {
+      "type": "object",
+      "description": "协议行段（agreeRow 的 segs 项；link:true 段可点须带 id）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^t(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^link(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "tabItem": {
+      "type": "object",
+      "description": "底栏 tab（tabbar 的 tabs 项；key 供 tabBar remap）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        }
+      },
+      "patternProperties": {
+        "^key(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^badge(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "stepItem": {
+      "type": "object",
+      "description": "时间线步骤（timeline 的 steps 项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^meta(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^state(@[a-z][a-z0-9_]*)?$": {
+          "enum": [
+            "",
+            "active",
+            "todo",
+            "done"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "panelItem": {
+      "type": "object",
+      "description": "统计面板（statPanels 的 panels 项）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pair"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "tcItem": {
+      "type": "object",
+      "description": "类型卡条目（typeCards 的 items 项；key 供编码派生）",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^key(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^icon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^vicon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^desc(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "stepper": {
+      "type": "object",
+      "description": "formCard 步进器",
+      "properties": {
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        }
+      },
+      "patternProperties": {
+        "^steps(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/strArr"
+        },
+        "^active(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        }
+      },
+      "additionalProperties": false,
+      "required": []
+    },
+    "block": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/blkStatusbar"
+        },
+        {
+          "$ref": "#/definitions/blkNavbar"
+        },
+        {
+          "$ref": "#/definitions/blkTabbar"
+        },
+        {
+          "$ref": "#/definitions/blkSpacer"
+        },
+        {
+          "$ref": "#/definitions/blkHero"
+        },
+        {
+          "$ref": "#/definitions/blkStats4"
+        },
+        {
+          "$ref": "#/definitions/blkServiceGrid"
+        },
+        {
+          "$ref": "#/definitions/blkAnnFlow"
+        },
+        {
+          "$ref": "#/definitions/blkAnnList"
+        },
+        {
+          "$ref": "#/definitions/blkListCard"
+        },
+        {
+          "$ref": "#/definitions/blkQuickGrid"
+        },
+        {
+          "$ref": "#/definitions/blkSegTabs"
+        },
+        {
+          "$ref": "#/definitions/blkVipStrip"
+        },
+        {
+          "$ref": "#/definitions/blkSearchBar"
+        },
+        {
+          "$ref": "#/definitions/blkFilterChips"
+        },
+        {
+          "$ref": "#/definitions/blkInfoCard"
+        },
+        {
+          "$ref": "#/definitions/blkTimeline"
+        },
+        {
+          "$ref": "#/definitions/blkFooter"
+        },
+        {
+          "$ref": "#/definitions/blkBrandHero"
+        },
+        {
+          "$ref": "#/definitions/blkLoginCard"
+        },
+        {
+          "$ref": "#/definitions/blkTypeCards"
+        },
+        {
+          "$ref": "#/definitions/blkBtnRow"
+        },
+        {
+          "$ref": "#/definitions/blkIntro"
+        },
+        {
+          "$ref": "#/definitions/blkFormCard"
+        },
+        {
+          "$ref": "#/definitions/blkStatPanels"
+        },
+        {
+          "$ref": "#/definitions/blkHeroStats"
+        },
+        {
+          "$ref": "#/definitions/blkFlowSteps"
+        },
+        {
+          "$ref": "#/definitions/blkProfileCard"
+        },
+        {
+          "$ref": "#/definitions/blkAttachRows"
+        },
+        {
+          "$ref": "#/definitions/blkEmptyHint"
+        },
+        {
+          "$ref": "#/definitions/blkCertBadge"
+        },
+        {
+          "$ref": "#/definitions/blkScanView"
+        },
+        {
+          "$ref": "#/definitions/blkMsgList"
+        },
+        {
+          "$ref": "#/definitions/blkCardGroup"
+        },
+        {
+          "$ref": "#/definitions/blkAgreeRow"
+        },
+        {
+          "$ref": "#/definitions/blkSubmitBtn"
+        },
+        {
+          "$ref": "#/definitions/blkFindpwHero"
+        },
+        {
+          "$ref": "#/definitions/blkVideoCard"
+        }
+      ]
+    },
+    "blkStatusbar": {
+      "type": "object",
+      "description": "chrome：状态栏（编译剥离，页面壳承担）",
+      "properties": {
+        "type": {
+          "const": "statusbar"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^dark(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkNavbar": {
+      "type": "object",
+      "description": "chrome：导航页头（title 或 brand 二选一）",
+      "properties": {
+        "type": {
+          "const": "navbar"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^back(@[a-z][a-z0-9_]*)?$": {
+          "type": "boolean",
+          "description": "是否带返回箭头（默认 true）"
+        },
+        "^brand(@[a-z][a-z0-9_]*)?$": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "品牌页头形态；传字符串则渲染为品牌名文本"
+        },
+        "^dark(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b",
+          "description": "深色形态（深底页用）"
+        },
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkTabbar": {
+      "type": "object",
+      "description": "chrome：底栏（tab 目标页才有）",
+      "properties": {
+        "type": {
+          "const": "tabbar"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^active(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        },
+        "^tabs(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tabItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkSpacer": {
+      "type": "object",
+      "description": "chrome：占位空隙",
+      "properties": {
+        "type": {
+          "const": "spacer"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^h(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkHero": {
+      "type": "object",
+      "description": "横幅提示区（sub 文案 + ca 快捷入口）",
+      "properties": {
+        "type": {
+          "const": "hero"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^h(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        },
+        "^padTop(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        },
+        "^ca(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/heroCa"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkStats4": {
+      "type": "object",
+      "description": "四格统计（纯展示）",
+      "properties": {
+        "type": {
+          "const": "stats4"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tri"
+          }
+        },
+        "^gap(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkServiceGrid": {
+      "type": "object",
+      "description": "服务宫格",
+      "properties": {
+        "type": {
+          "const": "serviceGrid"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/gridItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkAnnFlow": {
+      "type": "object",
+      "description": "公告流（头部查看更多 + 行 + 侧栏入口）",
+      "properties": {
+        "type": {
+          "const": "annFlow"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^rows(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/rowCard"
+          }
+        },
+        "^side(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/sideItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkAnnList": {
+      "type": "object",
+      "description": "公告列表",
+      "properties": {
+        "type": {
+          "const": "annList"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^rows(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/rowCard"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkListCard": {
+      "type": "object",
+      "description": "行卡（more 存在时头部渲染查看更多；rows 可被 _if 接口数据替换）",
+      "properties": {
+        "type": {
+          "const": "listCard"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^rows(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/rowCard"
+          }
+        },
+        "^more(@[a-z][a-z0-9_]*)?$": {
+          "type": [
+            "boolean",
+            "string"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkQuickGrid": {
+      "type": "object",
+      "description": "快捷宫格",
+      "properties": {
+        "type": {
+          "const": "quickGrid"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/gridItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkSegTabs": {
+      "type": "object",
+      "description": "分段 tab（页内态，无可点槽）",
+      "properties": {
+        "type": {
+          "const": "segTabs"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^tabs(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/strArr"
+        },
+        "^active(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkVipStrip": {
+      "type": "object",
+      "description": "会员条（整条可点）",
+      "properties": {
+        "type": {
+          "const": "vipStrip"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^badge(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^more(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkSearchBar": {
+      "type": "object",
+      "description": "搜索条（整条可点）",
+      "properties": {
+        "type": {
+          "const": "searchBar"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^placeholder(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkFilterChips": {
+      "type": "object",
+      "description": "筛选 chips（页内态）",
+      "properties": {
+        "type": {
+          "const": "filterChips"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^chips(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/strArr"
+        },
+        "^active(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkInfoCard": {
+      "type": "object",
+      "description": "信息卡（键值二元组行）",
+      "properties": {
+        "type": {
+          "const": "infoCard"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^rows(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pair"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkTimeline": {
+      "type": "object",
+      "description": "时间线（纯展示）",
+      "properties": {
+        "type": {
+          "const": "timeline"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^steps(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/stepItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkFooter": {
+      "type": "object",
+      "description": "页脚（纯展示）",
+      "properties": {
+        "type": {
+          "const": "footer"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^text(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkBrandHero": {
+      "type": "object",
+      "description": "品牌横幅（trust 二元组资质行）",
+      "properties": {
+        "type": {
+          "const": "brandHero"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^h(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        },
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^trust(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pair"
+          }
+        },
+        "^brand(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s",
+          "description": "品牌名（缺省不渲染该行）"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkLoginCard": {
+      "type": "object",
+      "description": "登录卡（提交钮 + links + 表单字段）",
+      "properties": {
+        "type": {
+          "const": "loginCard"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^fields(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fieldItem"
+          }
+        },
+        "^button(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^links(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/linkItem"
+          }
+        },
+        "^buttonDisabled(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^heading(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s",
+          "description": "卡头标题（如 用户登录；缺省不渲染）"
+        },
+        "^modeText(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s",
+          "description": "卡头右侧状态小字（缺省不渲染）"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkTypeCards": {
+      "type": "object",
+      "description": "类型选择卡（key 供编码派生）",
+      "properties": {
+        "type": {
+          "const": "typeCards"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/tcItem"
+          }
+        },
+        "^tip(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^tipLink(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkBtnRow": {
+      "type": "object",
+      "description": "按钮行",
+      "properties": {
+        "type": {
+          "const": "btnRow"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^buttons(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/btnItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkIntro": {
+      "type": "object",
+      "description": "介绍区（纯展示）",
+      "properties": {
+        "type": {
+          "const": "intro"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkFormCard": {
+      "type": "object",
+      "description": "表单卡（提交钮 + links + 字段 + 步进器）",
+      "properties": {
+        "type": {
+          "const": "formCard"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^seg(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/strArr"
+        },
+        "^fields(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fieldItem"
+          }
+        },
+        "^button(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^links(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/linkItem"
+          }
+        },
+        "^tip(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^buttonDisabled(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        },
+        "^stepper(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/stepper"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkStatPanels": {
+      "type": "object",
+      "description": "多面板统计（纯展示）",
+      "properties": {
+        "type": {
+          "const": "statPanels"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^panels(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/panelItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkHeroStats": {
+      "type": "object",
+      "description": "主色横幅统计卡（纯展示；存量 0 实例，形制取自 RdHeroStats.vue）",
+      "properties": {
+        "type": {
+          "const": "heroStats"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pair"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkFlowSteps": {
+      "type": "object",
+      "description": "流程步骤（纯展示）",
+      "properties": {
+        "type": {
+          "const": "flowSteps"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^steps(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/strArr"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkProfileCard": {
+      "type": "object",
+      "description": "个人卡（整卡可点）",
+      "properties": {
+        "type": {
+          "const": "profileCard"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^name(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^tags(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/strArr"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkAttachRows": {
+      "type": "object",
+      "description": "附件行组",
+      "properties": {
+        "type": {
+          "const": "attachRows"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^rows(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/attachRow"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkEmptyHint": {
+      "type": "object",
+      "description": "空态提示（纯展示）",
+      "properties": {
+        "type": {
+          "const": "emptyHint"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkCertBadge": {
+      "type": "object",
+      "description": "证书徽标（整块可点）",
+      "properties": {
+        "type": {
+          "const": "certBadge"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^vicon(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkScanView": {
+      "type": "object",
+      "description": "扫码视区（整块可点）",
+      "properties": {
+        "type": {
+          "const": "scanView"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^hint(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkMsgList": {
+      "type": "object",
+      "description": "消息列表",
+      "properties": {
+        "type": {
+          "const": "msgList"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/msgItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkCardGroup": {
+      "type": "object",
+      "description": "表单组卡（field 行可点；radio/upload 页内态）",
+      "properties": {
+        "type": {
+          "const": "cardGroup"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^name(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^items(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cgItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkAgreeRow": {
+      "type": "object",
+      "description": "协议行（link:true 段可点）",
+      "properties": {
+        "type": {
+          "const": "agreeRow"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^segs(@[a-z][a-z0-9_]*)?$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/segItem"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkSubmitBtn": {
+      "type": "object",
+      "description": "整宽提交钮（整块可点）",
+      "properties": {
+        "type": {
+          "const": "submitBtn"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^text(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkFindpwHero": {
+      "type": "object",
+      "description": "找回密码横幅（纯展示）",
+      "properties": {
+        "type": {
+          "const": "findpwHero"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^title(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^h(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/n"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "blkVideoCard": {
+      "type": "object",
+      "description": "视频卡（mode 为数据字段，与版本标识键 ver 无关）",
+      "properties": {
+        "type": {
+          "const": "videoCard"
+        },
+        "ver": {
+          "$ref": "#/definitions/verItem"
+        },
+        "id": {
+          "$ref": "#/definitions/code"
+        }
+      },
+      "patternProperties": {
+        "^mode(@[a-z][a-z0-9_]*)?$": {
+          "enum": [
+            "live",
+            "replay"
+          ]
+        },
+        "^label(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^sub(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/s"
+        },
+        "^live(@[a-z][a-z0-9_]*)?$": {
+          "$ref": "#/definitions/b"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    }
+  }
+}
